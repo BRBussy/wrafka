@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	"gitlab.com/iotTracker/brain/log"
-	consumerGroupException "gitlab.com/iotTracker/brain/messaging/consumer/group/exception"
+	consumerGroupException "gitlab.com/iotTracker/messaging/consumer/group/exception"
 	"os"
 	"os/signal"
 	"syscall"
