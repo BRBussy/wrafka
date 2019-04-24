@@ -2,8 +2,8 @@ package sync
 
 import (
 	"gitlab.com/iotTracker/brain/log"
-	messagingProducer "gitlab.com/iotTracker/brain/messaging/producer"
-	producerException "gitlab.com/iotTracker/brain/messaging/producer/exception"
+	messagingProducer "gitlab.com/iotTracker/messaging/producer"
+	producerException "gitlab.com/iotTracker/messaging/producer/exception"
 	"gopkg.in/Shopify/sarama.v1"
 )
 
