@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"gitlab.com/iotTracker/brain/log"
 	messagingProducer "gitlab.com/iotTracker/messaging/producer"
 	producerException "gitlab.com/iotTracker/messaging/producer/exception"
 	"gopkg.in/Shopify/sarama.v1"
@@ -57,10 +56,6 @@ func (p *producer) Produce(data []byte) error {
 	})
 	if err != nil {
 		return producerException.Produce{Reasons: []string{err.Error()}}
-	} else {
-		// The tuple (topic, partition, offset) can be used as a unique identifier
-		// for a message in a Kafka cluster.
-		log.Debug("Published kafka message")
 	}
 	return nil
 }
