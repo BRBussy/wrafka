@@ -3,8 +3,8 @@ package wrapped
 import (
 	"encoding/json"
 	"gitlab.com/iotTracker/messaging/message"
-	"gitlab.com/iotTracker/messaging/message/gpsLocation"
 	wrappedMessageException "gitlab.com/iotTracker/messaging/message/wrapped/exception"
+	zx303GPSReadingMessage "gitlab.com/iotTracker/messaging/message/zx303/reading/gps"
 )
 
 type Wrapped struct {
@@ -41,8 +41,8 @@ func (m *Wrapped) UnmarshalJSON(data []byte) error {
 	}
 
 	switch aux.Type {
-	case message.GPSLocation:
-		var unmarshalledMessage gpsLocation.Message
+	case message.ZX303GPSReading:
+		var unmarshalledMessage zx303GPSReadingMessage.Message
 		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
 			return wrappedMessageException.Unwrapping{Reasons: []string{"json unmarshalling value", err.Error()}}
 		}

@@ -1,3 +1,4 @@
 package message
 
-const GPSLocation Type = "GPSLocation"
+const ZX303GPSReading Type = "ZX303GPSReading"
+const ZX303StatusReading Type = "ZX303StatusReading"

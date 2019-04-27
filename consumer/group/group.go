@@ -50,7 +50,9 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 
 		for _, handler := range c.handlers {
 			if handler.WantsMessage(wrappedMessage.Message) {
-				handler.HandleMessage(wrappedMessage.Message)
+				if err := handler.HandleMessage(wrappedMessage.Message); err != nil {
+					log.Error("error handling message: ", err.Error())
+				}
 			}
 		}
 
