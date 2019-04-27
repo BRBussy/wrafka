@@ -1,6 +1,9 @@
 package sync
 
 import (
+	"encoding/json"
+	"gitlab.com/iotTracker/messaging/message"
+	wrappedMessage "gitlab.com/iotTracker/messaging/message/wrapped"
 	messagingProducer "gitlab.com/iotTracker/messaging/producer"
 	producerException "gitlab.com/iotTracker/messaging/producer/exception"
 	"gopkg.in/Shopify/sarama.v1"
@@ -45,14 +48,23 @@ func (p *producer) Start() error {
 	return nil
 }
 
-func (p *producer) Produce(data []byte) error {
+func (p *producer) Produce(message message.Message) error {
 	// We are not setting a message key, which means that all messages will
 	// be distributed randomly over the different partitions.
 
+	wrappedMessage, err := wrappedMessage.Wrap(message)
+	if err != nil {
+		return producerException.Produce{Reasons: []string{"wrapping", err.Error()}}
+	}
+	messageData, err := json.Marshal(wrappedMessage)
+	if err != nil {
+		return producerException.Produce{Reasons: []string{"marshalling wrapped", err.Error()}}
+	}
+
 	//partition, offset, err := p.producer.SendMessage(&sarama.ProducerMessage{
-	_, _, err := p.producer.SendMessage(&sarama.ProducerMessage{
+	_, _, err = p.producer.SendMessage(&sarama.ProducerMessage{
 		Topic: p.topic,
-		Value: sarama.ByteEncoder(data),
+		Value: sarama.ByteEncoder(messageData),
 	})
 	if err != nil {
 		return producerException.Produce{Reasons: []string{err.Error()}}
