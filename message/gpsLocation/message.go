@@ -5,14 +5,14 @@ import (
 	"errors"
 	"gitlab.com/iotTracker/brain/search/identifier"
 	wrappedIdentifier "gitlab.com/iotTracker/brain/search/identifier/wrapped"
-	"gitlab.com/iotTracker/brain/tracker/device"
+	"gitlab.com/iotTracker/brain/tracker"
 	"gitlab.com/iotTracker/messaging/message"
 )
 
 type Message struct {
 	// Device Details
 	DeviceId   identifier.Identifier `json:"deviceId"`
-	DeviceType device.Type           `json:"deviceType"`
+	DeviceType tracker.Type          `json:"deviceType"`
 
 	// Reading Details
 	TimeStamp int64   `json:"timeStamp"`
