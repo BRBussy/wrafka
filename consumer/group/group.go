@@ -2,10 +2,13 @@ package group
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/Shopify/sarama"
 	consumerGroupException "gitlab.com/iotTracker/messaging/consumer/group/exception"
 	"gitlab.com/iotTracker/messaging/log"
+	messageHandler "gitlab.com/iotTracker/messaging/message/handler"
+	messagingWrappedMessage "gitlab.com/iotTracker/messaging/message/wrapped"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,7 +16,8 @@ import (
 
 // consumer represents a Sarama consumer group consumer
 type consumer struct {
-	ready chan bool
+	ready    chan bool
+	handlers []messageHandler.Handler
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
@@ -38,6 +42,18 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	for message := range claim.Messages() {
 		log.Info(fmt.Sprintf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic))
+
+		var wrappedMessage messagingWrappedMessage.Wrapped
+		if err := json.Unmarshal(message.Value, &wrappedMessage); err != nil {
+			return consumerGroupException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}
+		}
+
+		for _, handler := range c.handlers {
+			if handler.WantsMessage(wrappedMessage.Message) {
+				handler.HandleMessage(wrappedMessage.Message)
+			}
+		}
+
 		session.MarkMessage(message, "")
 	}
 
@@ -47,6 +63,7 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 type group struct {
 	brokers   []string
 	topics    []string
+	handlers  []messageHandler.Handler
 	groupName string
 }
 
@@ -54,11 +71,13 @@ func New(
 	brokers []string,
 	topics []string,
 	groupName string,
+	handlers []messageHandler.Handler,
 ) *group {
 	return &group{
 		brokers:   brokers,
 		topics:    topics,
 		groupName: groupName,
+		handlers:  handlers,
 	}
 }
 
@@ -76,7 +95,8 @@ func (g *group) Start() error {
 	defer func() { _ = client.Close() }()
 
 	consumer := consumer{
-		ready: make(chan bool, 0),
+		ready:    make(chan bool, 0),
+		handlers: g.handlers,
 	}
 
 	ctx := context.Background()

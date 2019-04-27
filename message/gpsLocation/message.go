@@ -2,10 +2,10 @@ package gpsLocation
 
 import (
 	"encoding/json"
+	"errors"
 	"gitlab.com/iotTracker/brain/search/identifier"
 	wrappedIdentifier "gitlab.com/iotTracker/brain/search/identifier/wrapped"
 	"gitlab.com/iotTracker/brain/tracker/device"
-	"gitlab.com/iotTracker/messaging/log"
 	"gitlab.com/iotTracker/messaging/message"
 )
 
@@ -31,8 +31,6 @@ func (m Message) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	log.Info("wrapping!!!!!!")
-
 	type Alias Message
 	return json.Marshal(&struct {
 		Alias
@@ -41,4 +39,26 @@ func (m Message) MarshalJSON() ([]byte, error) {
 		DeviceId: *wrappedDeviceId,
 		Alias:    (Alias)(m),
 	})
+}
+
+func (m *Message) UnmarshalJSON(data []byte) error {
+	type Alias Message
+	aux := &struct {
+		*Alias
+		DeviceId wrappedIdentifier.Wrapped `json:"deviceId"`
+	}{
+		Alias: (*Alias)(m),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return errors.New("unmarshalling: " + err.Error())
+	}
+
+	m.DeviceId = aux.DeviceId.Identifier
+	m.DeviceType = aux.DeviceType
+	m.TimeStamp = aux.TimeStamp
+	m.Latitude = aux.Latitude
+	m.Longitude = aux.Longitude
+
+	return nil
 }

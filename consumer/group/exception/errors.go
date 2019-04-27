@@ -19,5 +19,5 @@ type Consumption struct {
 }
 
 func (e Consumption) Error() string {
-	return "error consuming from kafka: " + strings.Join(e.Reasons, "; ")
+	return "error consuming: " + strings.Join(e.Reasons, "; ")
 }
