@@ -44,7 +44,8 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	for message := range claim.Messages() {
 		var wrappedMessage messagingWrappedMessage.Wrapped
 		if err := json.Unmarshal(message.Value, &wrappedMessage); err != nil {
-			return consumerGroupException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}
+			log.Error(consumerGroupException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}.Error())
+			continue
 		}
 
 		for _, handler := range c.handlers {

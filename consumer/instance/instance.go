@@ -80,7 +80,8 @@ ConsumerLoop:
 		case message := <-partitionConsumer.Messages():
 			var wrappedMessage messagingWrappedMessage.Wrapped
 			if err := json.Unmarshal(message.Value, &wrappedMessage); err != nil {
-				return consumerInstanceException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}
+				log.Error(consumerInstanceException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}.Error())
+				continue ConsumerLoop
 			}
 			for _, handler := range i.handlers {
 				if handler.WantsMessage(wrappedMessage.Message) {
