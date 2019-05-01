@@ -11,6 +11,7 @@ import (
 	messagingWrappedMessage "gitlab.com/iotTracker/messaging/message/wrapped"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -84,7 +85,7 @@ func New(
 }
 
 func (g *group) Start() error {
-	log.Info(fmt.Sprintf("Starting a Consumer Group %s", g.groupName))
+	log.Info(fmt.Sprintf("Starting a Consumer Group %s, Listening on Topics: %s", g.groupName, strings.Join(g.topics, ", ")))
 
 	config := sarama.NewConfig()
 	config.Version = sarama.V1_1_1_0
