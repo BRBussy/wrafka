@@ -2,6 +2,7 @@ package sync
 
 import (
 	"encoding/json"
+	"gitlab.com/iotTracker/messaging/log"
 	"gitlab.com/iotTracker/messaging/message"
 	wrappedMessage "gitlab.com/iotTracker/messaging/message/wrapped"
 	messagingProducer "gitlab.com/iotTracker/messaging/producer"
@@ -42,6 +43,8 @@ func (p *producer) Start() error {
 	if err != nil {
 		return producerException.Start{Reasons: []string{"failed to connect new producer", err.Error()}}
 	}
+
+	log.Info("Started producer for topic: %s", p.topic)
 
 	p.producer = producer
 
