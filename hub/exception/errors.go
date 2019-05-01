@@ -55,3 +55,12 @@ type GetClient struct {
 func (e GetClient) Error() string {
 	return fmt.Sprintf("error getting client: %s, %s", e.ClientId.String(), strings.Join(e.Reasons, "; "))
 }
+
+type StopClient struct {
+	ClientId client.Identifier
+	Reasons  []string
+}
+
+func (e StopClient) Error() string {
+	return fmt.Sprintf("error stopping client: %s, %s", e.ClientId.String(), strings.Join(e.Reasons, "; "))
+}

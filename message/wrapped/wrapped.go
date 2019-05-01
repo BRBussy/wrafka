@@ -7,6 +7,7 @@ import (
 	zx303GPSReadingMessage "gitlab.com/iotTracker/messaging/message/zx303/reading/gps"
 	zx303StatusReadingMessage "gitlab.com/iotTracker/messaging/message/zx303/reading/status"
 	zx303TaskSubmittedMessage "gitlab.com/iotTracker/messaging/message/zx303/task/submitted"
+	zx303TaskTransitionedMessage "gitlab.com/iotTracker/messaging/message/zx303/task/transitioned"
 	zx303TransmitMessage "gitlab.com/iotTracker/messaging/message/zx303/transmit"
 )
 
@@ -58,6 +59,13 @@ func (m *Wrapped) UnmarshalJSON(data []byte) error {
 		}
 		m.Message = unmarshalledMessage
 
+	case message.ZX303Transmit:
+		var unmarshalledMessage zx303TransmitMessage.Message
+		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
+			return wrappedMessageException.Unwrapping{Reasons: []string{"json unmarshalling value", err.Error()}}
+		}
+		m.Message = unmarshalledMessage
+
 	case message.ZX303TaskSubmitted:
 		var unmarshalledMessage zx303TaskSubmittedMessage.Message
 		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
@@ -65,8 +73,8 @@ func (m *Wrapped) UnmarshalJSON(data []byte) error {
 		}
 		m.Message = unmarshalledMessage
 
-	case message.ZX303Transmit:
-		var unmarshalledMessage zx303TransmitMessage.Message
+	case message.ZX303TaskTransitioned:
+		var unmarshalledMessage zx303TaskTransitionedMessage.Message
 		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
 			return wrappedMessageException.Unwrapping{Reasons: []string{"json unmarshalling value", err.Error()}}
 		}

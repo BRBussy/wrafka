@@ -51,8 +51,16 @@ func (h *hub) DeRegisterClient(client messagingClient.Client) error {
 	}
 
 	// check if the client is registered on this hub
-	if _, clientRegistered := h.clients[client.Identifier()]; !clientRegistered {
+	clientToDeRegister, clientRegistered := h.clients[client.Identifier()]
+	if !clientRegistered {
 		return hubException.ClientDeRegistration{Reasons: []string{"client not in hub", client.Identifier().String()}}
+	}
+
+	if err := clientToDeRegister.Stop(); err != nil {
+		return hubException.StopClient{
+			ClientId: clientToDeRegister.Identifier(),
+			Reasons:  []string{err.Error()},
+		}
 	}
 
 	// remove client from hub
