@@ -14,6 +14,14 @@ func (e ClientRegistration) Error() string {
 	return "client registration error: " + strings.Join(e.Reasons, "; ")
 }
 
+type ClientDeRegistration struct {
+	Reasons []string
+}
+
+func (e ClientDeRegistration) Error() string {
+	return "client deRegistration error: " + strings.Join(e.Reasons, "; ")
+}
+
 type ClientAlreadyRegistered struct {
 	ClientId client.Identifier
 }

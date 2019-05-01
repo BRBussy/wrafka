@@ -44,6 +44,23 @@ func (h *hub) RegisterClient(client messagingClient.Client) error {
 	return nil
 }
 
+func (h *hub) DeRegisterClient(client messagingClient.Client) error {
+	// check if the client identifier is blank, cannot be registered
+	if client.Identifier().Id == "" || client.Identifier().Type == "" {
+		return hubException.ClientDeRegistration{Reasons: []string{"identifier is blank", client.Identifier().String()}}
+	}
+
+	// check if the client is registered on this hub
+	if _, clientRegistered := h.clients[client.Identifier()]; !clientRegistered {
+		return hubException.ClientDeRegistration{Reasons: []string{"client not in hub", client.Identifier().String()}}
+	}
+
+	// remove client from hub
+	delete(h.clients, client.Identifier())
+
+	return nil
+}
+
 func (h *hub) Broadcast(message message.Message) error {
 	sendErrors := make([]string, 0)
 	for _, client := range h.clients {
