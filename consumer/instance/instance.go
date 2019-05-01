@@ -1,11 +1,13 @@
 package instance
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Shopify/sarama"
 	consumerInstanceException "gitlab.com/iotTracker/messaging/consumer/instance/exception"
 	"gitlab.com/iotTracker/messaging/log"
 	messageHandler "gitlab.com/iotTracker/messaging/message/handler"
+	messagingWrappedMessage "gitlab.com/iotTracker/messaging/message/wrapped"
 	"os"
 	"os/signal"
 	"strings"
@@ -75,8 +77,18 @@ func (i *instance) Start() error {
 ConsumerLoop:
 	for {
 		select {
-		case msg := <-partitionConsumer.Messages():
-			log.Info("Consumed message!: ", msg.Value)
+		case message := <-partitionConsumer.Messages():
+			var wrappedMessage messagingWrappedMessage.Wrapped
+			if err := json.Unmarshal(message.Value, &wrappedMessage); err != nil {
+				return consumerInstanceException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}
+			}
+			for _, handler := range i.handlers {
+				if handler.WantsMessage(wrappedMessage.Message) {
+					if err := handler.HandleMessage(wrappedMessage.Message); err != nil {
+						log.Error(consumerInstanceException.MessageHandling{Reasons: []string{err.Error()}}.Error())
+					}
+				}
+			}
 
 		case <-signals:
 			break ConsumerLoop

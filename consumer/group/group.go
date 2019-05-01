@@ -42,8 +42,6 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 	// The `ConsumeClaim` itself is called within a goroutine, see:
 	// https://github.com/Shopify/sarama/blob/master/consumer_group.go#L27-L29
 	for message := range claim.Messages() {
-		log.Info(fmt.Sprintf("Message claimed: value = %s, timestamp = %v, topic = %s", string(message.Value), message.Timestamp, message.Topic))
-
 		var wrappedMessage messagingWrappedMessage.Wrapped
 		if err := json.Unmarshal(message.Value, &wrappedMessage); err != nil {
 			return consumerGroupException.Consumption{Reasons: []string{"unmarshalling wrapped message", err.Error()}}
