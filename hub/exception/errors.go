@@ -6,6 +6,14 @@ import (
 	"strings"
 )
 
+type ClientRegistration struct {
+	Reasons []string
+}
+
+func (e ClientRegistration) Error() string {
+	return "client registration error: " + strings.Join(e.Reasons, "; ")
+}
+
 type Broadcast struct {
 	Reasons []string
 }

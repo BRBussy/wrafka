@@ -1,26 +1,39 @@
 package basic
 
 import (
-	"gitlab.com/iotTracker/messaging/client"
+	"fmt"
+	messagingClient "gitlab.com/iotTracker/messaging/client"
 	messagingHub "gitlab.com/iotTracker/messaging/hub"
 	hubException "gitlab.com/iotTracker/messaging/hub/exception"
 	"gitlab.com/iotTracker/messaging/message"
 )
 
 type hub struct {
-	Clients []client.Client
+	clients map[messagingClient.Identifier]messagingClient.Client
 }
 
 func New() messagingHub.Hub {
-	return &hub{}
+	return &hub{
+		clients: make(map[messagingClient.Identifier]messagingClient.Client),
+	}
+}
+
+func (h *hub) RegisterClient(client messagingClient.Client) error {
+	// check if the client is already registered
+	if _, clientRegistered := h.clients[client.Identifier()]; clientRegistered {
+		return hubException.ClientRegistration{Reasons: []string{fmt.Sprintf("client %s already registered", client.Identifier().String())}}
+	}
+	// if not register the client
+	h.clients[client.Identifier()] = client
+	return nil
 }
 
 func (h *hub) Broadcast(message message.Message) error {
 	sendErrors := make([]string, 0)
-	for _, c := range h.Clients {
-		if err := c.Send(message); err != nil {
+	for _, client := range h.clients {
+		if err := client.Send(message); err != nil {
 			sendErrors = append(sendErrors, hubException.SendToClient{
-				ClientId: c.Identifier(),
+				ClientId: client.Identifier(),
 				Reasons:  []string{err.Error()},
 			}.Error())
 		}
@@ -32,20 +45,22 @@ func (h *hub) Broadcast(message message.Message) error {
 	return nil
 }
 
-func (h *hub) SendToClient(identifier client.Identifier, message message.Message) error {
-	for _, c := range h.Clients {
-		if c.IdentifiedBy(identifier) {
-			if err := c.Send(message); err != nil {
-				return hubException.SendToClient{
-					ClientId: c.Identifier(),
-					Reasons:  []string{err.Error()},
-				}
-			}
-			return nil
+func (h *hub) SendToClient(identifier messagingClient.Identifier, message message.Message) error {
+	// get client from map of registered clients
+	client, clientRegistered := h.clients[identifier]
+	if !clientRegistered {
+		return hubException.SendToClient{
+			ClientId: identifier,
+			Reasons:  []string{"no such client in hub"},
 		}
 	}
-	return hubException.SendToClient{
-		ClientId: identifier,
-		Reasons:  []string{"no such client in hub"},
+	// try and send the message to the client
+	if err := client.Send(message); err != nil {
+		return hubException.SendToClient{
+			ClientId: client.Identifier(),
+			Reasons:  []string{err.Error()},
+		}
 	}
+
+	return nil
 }
