@@ -85,7 +85,12 @@ func New(
 }
 
 func (g *group) Start() error {
-	log.Info(fmt.Sprintf("Starting a Consumer Group %s, Listening on Topics: %s", g.groupName, strings.Join(g.topics, ", ")))
+	log.Info(fmt.Sprintf(
+		"Starting a Consumer Group %s, Listening on Topics: %s, using Brokers: %s",
+		g.groupName,
+		strings.Join(g.topics, ", "),
+		strings.Join(g.brokers, ", ")),
+	)
 
 	config := sarama.NewConfig()
 	config.Version = sarama.V1_1_1_0

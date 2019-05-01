@@ -9,6 +9,7 @@ import (
 	messagingProducer "gitlab.com/iotTracker/messaging/producer"
 	producerException "gitlab.com/iotTracker/messaging/producer/exception"
 	"gopkg.in/Shopify/sarama.v1"
+	"strings"
 )
 
 type producer struct {
@@ -45,7 +46,7 @@ func (p *producer) Start() error {
 		return producerException.Start{Reasons: []string{"failed to connect new producer", err.Error()}}
 	}
 
-	log.Info(fmt.Sprintf("Started Producer for Topic: %s", p.topic))
+	log.Info(fmt.Sprintf("Started Producer for Topic: %s, Using Brokers: %s", p.topic, strings.Join(p.brokers, ", ")))
 
 	p.producer = producer
 
