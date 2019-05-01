@@ -11,7 +11,7 @@ type GroupCreation struct {
 }
 
 func (e GroupCreation) Error() string {
-	return fmt.Sprintf("error creating consumer group %s: %s", e.GroupName, strings.Join(e.Reasons, "; "))
+	return fmt.Sprintf("error creating consumer instance %s: %s", e.GroupName, strings.Join(e.Reasons, "; "))
 }
 
 type Consumption struct {
@@ -27,5 +27,5 @@ type Starting struct {
 }
 
 func (e Starting) Error() string {
-	return "error starting consumer group: %s" + strings.Join(e.Reasons, "; ")
+	return "error starting consumer instance: %s" + strings.Join(e.Reasons, "; ")
 }

@@ -86,7 +86,7 @@ func New(
 
 func (g *group) Start() error {
 	log.Info(fmt.Sprintf(
-		"Starting a Consumer Group %s, Listening on Topics: %s, using Brokers: %s",
+		"Starting a Consumer Group %s for Topics: %s, using Brokers: %s",
 		g.groupName,
 		strings.Join(g.topics, ", "),
 		strings.Join(g.brokers, ", ")),
@@ -98,7 +98,7 @@ func (g *group) Start() error {
 
 	client, err := sarama.NewClient(g.brokers, config)
 	if err != nil {
-		log.Fatal("Failed to create kafka client: ", err)
+		return consumerGroupException.Starting{Reasons: []string{"failed to create kafka client", err.Error()}}
 	}
 	defer func() { _ = client.Close() }()
 
