@@ -27,5 +27,21 @@ type Starting struct {
 }
 
 func (e Starting) Error() string {
-	return "error starting consumer group: %s" + strings.Join(e.Reasons, "; ")
+	return "error starting consumer group: " + strings.Join(e.Reasons, "; ")
+}
+
+type MessageHandling struct {
+	Reasons []string
+}
+
+func (e MessageHandling) Error() string {
+	return "error handling message: " + strings.Join(e.Reasons, "; ")
+}
+
+type Termination struct {
+	Reasons []string
+}
+
+func (e Termination) Error() string {
+	return "error terminating consumer group: " + strings.Join(e.Reasons, "; ")
 }

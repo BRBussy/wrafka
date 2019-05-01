@@ -52,7 +52,7 @@ func (c *consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim saram
 		for _, handler := range c.handlers {
 			if handler.WantsMessage(wrappedMessage.Message) {
 				if err := handler.HandleMessage(wrappedMessage.Message); err != nil {
-					log.Error("error handling message: ", err.Error())
+					log.Error(consumerGroupException.MessageHandling{Reasons: []string{err.Error()}}.Error())
 				}
 			}
 		}
@@ -100,7 +100,12 @@ func (g *group) Start() error {
 	if err != nil {
 		return consumerGroupException.Starting{Reasons: []string{"failed to create kafka client", err.Error()}}
 	}
-	defer func() { _ = client.Close() }()
+	// close client on termination
+	defer func() {
+		if err = client.Close(); err != nil {
+			log.Error(consumerGroupException.Termination{Reasons: []string{"closing client", err.Error()}}.Error())
+		}
+	}()
 
 	consumer := consumer{
 		ready:    make(chan bool, 0),
@@ -112,6 +117,12 @@ func (g *group) Start() error {
 	if err != nil {
 		return consumerGroupException.GroupCreation{GroupName: g.groupName, Reasons: []string{err.Error()}}
 	}
+	// close group on termination
+	defer func() {
+		if err := consumerGroup.Close(); err != nil {
+			log.Error(consumerGroupException.Termination{Reasons: []string{"closing consumer group", err.Error()}}.Error())
+		}
+	}()
 
 	go func() {
 		for {
@@ -128,12 +139,7 @@ func (g *group) Start() error {
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
 
-	<-sigterm // Await a sigterm signal before safely closing the consumer
-
-	err = client.Close()
-	if err != nil {
-		log.Fatal("error closing %s group client: ", err.Error())
-	}
+	<-sigterm
 
 	return nil
 }

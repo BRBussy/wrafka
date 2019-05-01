@@ -50,10 +50,10 @@ func (i *instance) Start() error {
 	if err != nil {
 		return consumerInstanceException.Starting{Reasons: []string{"failed to get new consumer from client", err.Error()}}
 	}
-
+	// close consumer on termination
 	defer func() {
 		if err := consumer.Close(); err != nil {
-			log.Fatal(err)
+			log.Error(consumerInstanceException.Termination{Reasons: []string{"closing consumer", err.Error()}}.Error())
 		}
 	}()
 
@@ -61,10 +61,10 @@ func (i *instance) Start() error {
 	if err != nil {
 		panic(err)
 	}
-
+	// close partition consumer on termination
 	defer func() {
 		if err := partitionConsumer.Close(); err != nil {
-			log.Fatal(err)
+			log.Error(consumerInstanceException.Termination{Reasons: []string{"closing partition consumer", err.Error()}}.Error())
 		}
 	}()
 
