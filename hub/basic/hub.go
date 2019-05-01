@@ -1,7 +1,6 @@
 package basic
 
 import (
-	"fmt"
 	messagingClient "gitlab.com/iotTracker/messaging/client"
 	messagingHub "gitlab.com/iotTracker/messaging/hub"
 	hubException "gitlab.com/iotTracker/messaging/hub/exception"
@@ -18,10 +17,27 @@ func New() messagingHub.Hub {
 	}
 }
 
+func (h *hub) GetClient(identifier messagingClient.Identifier) (messagingClient.Client, error) {
+	client, clientRegistered := h.clients[identifier]
+	if !clientRegistered {
+		return nil, hubException.GetClient{
+			ClientId: identifier,
+			Reasons:  []string{"no such client in hub"},
+		}
+	}
+
+	return client, nil
+}
+
 func (h *hub) RegisterClient(client messagingClient.Client) error {
+	// check if the client identifier is blank, cannot be registered
+	if client.Identifier().Id == "" || client.Identifier().Type == "" {
+		return hubException.ClientRegistration{Reasons: []string{"identifier is blank", client.Identifier().String()}}
+	}
+
 	// check if the client is already registered
 	if _, clientRegistered := h.clients[client.Identifier()]; clientRegistered {
-		return hubException.ClientRegistration{Reasons: []string{fmt.Sprintf("client %s already registered", client.Identifier().String())}}
+		return hubException.ClientAlreadyRegistered{ClientId: client.Identifier()}
 	}
 	// if not register the client
 	h.clients[client.Identifier()] = client

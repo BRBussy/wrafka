@@ -14,6 +14,14 @@ func (e ClientRegistration) Error() string {
 	return "client registration error: " + strings.Join(e.Reasons, "; ")
 }
 
+type ClientAlreadyRegistered struct {
+	ClientId client.Identifier
+}
+
+func (e ClientAlreadyRegistered) Error() string {
+	return fmt.Sprintf("client already registered: %s, %s", e.ClientId.String())
+}
+
 type Broadcast struct {
 	Reasons []string
 }
@@ -29,4 +37,13 @@ type SendToClient struct {
 
 func (e SendToClient) Error() string {
 	return fmt.Sprintf("error sending to client: %s, %s", e.ClientId.String(), strings.Join(e.Reasons, "; "))
+}
+
+type GetClient struct {
+	ClientId client.Identifier
+	Reasons  []string
+}
+
+func (e GetClient) Error() string {
+	return fmt.Sprintf("error getting client: %s, %s", e.ClientId.String(), strings.Join(e.Reasons, "; "))
 }

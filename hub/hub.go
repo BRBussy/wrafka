@@ -9,4 +9,5 @@ type Hub interface {
 	RegisterClient(client client.Client) error
 	Broadcast(message message.Message) error
 	SendToClient(identifier client.Identifier, message message.Message) error
+	GetClient(identifier client.Identifier) (client.Client, error)
 }
