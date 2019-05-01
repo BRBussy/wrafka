@@ -6,6 +6,7 @@ import (
 	wrappedMessageException "gitlab.com/iotTracker/messaging/message/wrapped/exception"
 	zx303GPSReadingMessage "gitlab.com/iotTracker/messaging/message/zx303/reading/gps"
 	zx303StatusReadingMessage "gitlab.com/iotTracker/messaging/message/zx303/reading/status"
+	zx303TaskSubmittedMessage "gitlab.com/iotTracker/messaging/message/zx303/task/submitted"
 )
 
 type Wrapped struct {
@@ -51,6 +52,13 @@ func (m *Wrapped) UnmarshalJSON(data []byte) error {
 
 	case message.ZX303StatusReading:
 		var unmarshalledMessage zx303StatusReadingMessage.Message
+		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
+			return wrappedMessageException.Unwrapping{Reasons: []string{"json unmarshalling value", err.Error()}}
+		}
+		m.Message = unmarshalledMessage
+
+	case message.ZX303TaskSubmitted:
+		var unmarshalledMessage zx303TaskSubmittedMessage.Message
 		if err := json.Unmarshal(m.Value, &unmarshalledMessage); err != nil {
 			return wrappedMessageException.Unwrapping{Reasons: []string{"json unmarshalling value", err.Error()}}
 		}
