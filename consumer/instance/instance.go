@@ -76,7 +76,7 @@ ConsumerLoop:
 	for {
 		select {
 		case msg := <-partitionConsumer.Messages():
-			log.Info("Consumed message: ", msg.Value)
+			log.Info("Consumed message!: ", msg.Value)
 
 		case <-signals:
 			break ConsumerLoop
