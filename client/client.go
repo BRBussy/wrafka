@@ -7,7 +7,6 @@ import (
 
 type Client interface {
 	Send(message message.Message) error
-	Stop() error
 	IdentifiedBy(identifier Identifier) bool
 	Identifier() Identifier
 }
