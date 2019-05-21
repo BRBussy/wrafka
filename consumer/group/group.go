@@ -17,15 +17,16 @@ import (
 
 // consumer represents a Sarama consumer group consumer
 type consumer struct {
-	ready    chan bool
-	handlers []messageHandler.Handler
+	groupName string
+	handlers  []messageHandler.Handler
 }
 
 // Setup is run at the beginning of a new session, before ConsumeClaim
 func (c *consumer) Setup(sarama.ConsumerGroupSession) error {
 	// Mark the consumer as ready
-	c.ready <- true
-	close(c.ready)
+
+	// check if the channel is open
+	log.Info(fmt.Sprintf("Consumer Group %s Setup", c.groupName))
 	return nil
 }
 
@@ -107,8 +108,8 @@ func (g *group) Start() error {
 	}()
 
 	consumer := consumer{
-		ready:    make(chan bool, 0),
-		handlers: g.handlers,
+		groupName: g.groupName,
+		handlers:  g.handlers,
 	}
 
 	ctx := context.Background()
@@ -132,12 +133,8 @@ func (g *group) Start() error {
 		}
 	}()
 
-	<-consumer.ready // Await till the consumer has been set up
-	log.Info(fmt.Sprintf("Consumer Group %s up and running", g.groupName))
-
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, syscall.SIGINT, syscall.SIGTERM)
-
 	<-sigterm
 
 	return nil
