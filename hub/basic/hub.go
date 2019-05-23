@@ -29,6 +29,10 @@ func (h *hub) GetClient(identifier messagingClient.Identifier) (messagingClient.
 	return client, nil
 }
 
+func (h *hub) ClientCount() int {
+	return len(h.clients)
+}
+
 func (h *hub) RegisterClient(client messagingClient.Client) error {
 	// check if the client identifier is blank, cannot be registered
 	if client.Identifier().Id == "" || client.Identifier().Type == "" {
@@ -57,6 +61,25 @@ func (h *hub) DeRegisterClient(client messagingClient.Client) error {
 
 	// remove client from hub
 	delete(h.clients, client.Identifier())
+	return nil
+}
+
+func (h *hub) ReRegisterClient(client messagingClient.Client) error {
+	// check if the client identifier is blank, cannot be registered
+	if client.Identifier().Id == "" || client.Identifier().Type == "" {
+		return hubException.ClientDeRegistration{Reasons: []string{"identifier is blank", client.Identifier().String()}}
+	}
+
+	// check if the client is registered on this hub
+	if _, clientRegistered := h.clients[client.Identifier()]; !clientRegistered {
+		return hubException.ClientDeRegistration{Reasons: []string{"client not in hub", client.Identifier().String()}}
+	}
+
+	// remove old client from hub
+	delete(h.clients, client.Identifier())
+
+	// add new client back to hub
+	h.clients[client.Identifier()] = client
 
 	return nil
 }

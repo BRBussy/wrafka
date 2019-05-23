@@ -27,7 +27,7 @@ type ClientAlreadyRegistered struct {
 }
 
 func (e ClientAlreadyRegistered) Error() string {
-	return fmt.Sprintf("client already registered: %s, %s", e.ClientId.String())
+	return fmt.Sprintf("client already registered: %s", e.ClientId.String())
 }
 
 type Broadcast struct {
